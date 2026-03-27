@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Jornada</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      overscroll-behavior: none;
+      touch-action: none;
+      background: #0c0814;
+    }
+    #root { width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel">
+    const { useCallback, useEffect, useRef, useState } = React;
+
+    const etapas = [
+      {
+        tipo: "texto",
+        conteudo: "Algumas coisas só se revelam quando o mundo desacelera.",
+        fundo: "linear-gradient(160deg, #1a0a2e 0%, #2d1b4e 50%, #0f0a1a 100%)",
+      },
+      {
+        tipo: "texto",
+        conteudo: "O tempo não apressa — apenas prepara.",
+        fundo: "linear-gradient(160deg, #0d1b2a 0%, #1b3a5c 50%, #0a1520 100%)",
+      },
+      {
+        tipo: "texto",
+        conteudo: "Nem toda chegada faz barulho.",
+        fundo: "linear-gradient(160deg, #1a0f0a 0%, #3d1a0d 50%, #0f0805 100%)",
+      },
+      {
+        tipo: "texto",
+        conteudo: "Há encontros que nascem no silêncio.",
+        fundo: "linear-gradient(160deg, #0a1a0f 0%, #1a3d20 50%, #060f08 100%)",
+      },
+      {
+        tipo: "imagem",
+        conteudo: "https://img.freepik.com/fotos-premium/casal-apaixonado-assistindo-por-do-sol-juntos-na-praia_319110-79.jpg",
+        frase: "E mesmo em silêncio… alguém observa o mesmo pôr do sol.",
+        fundo: "linear-gradient(160deg, #3d1208 0%, #1e0a22 55%, #0c0814 100%)",
+      },
+      {
+        tipo: "texto",
+        conteudo: "Esse momento foi guardado só para você.",
+        fundo: "linear-gradient(160deg, #1a0f2e 0%, #2e1a4e 50%, #0a0814 100%)",
+      },
+      {
+        tipo: "texto",
+        conteudo: "Três horas... suas.",
+        fundo: "linear-gradient(160deg, #2e0a0a 0%, #5c1a0d 40%, #3d0a22 80%, #0c0814 100%)",
+      },
+    ];
+
+    const CARD_W = 320;
+    const CARD_H = 200;
+
+    function JornadaPage() {
+      const canvasRef = useRef(null);
+      const containerRef = useRef(null);
+      const etapaAtualRef = useRef(0);
+      const [etapaAtual, setEtapaAtual] = useState(0);
+      const [fraseOpacity, setFraseOpacity] = useState(0.15);
+      const [fraseBlur, setFraseBlur] = useState(6);
+      const [imgOpacity, setImgOpacity] = useState(0.05);
+      const [finalizado, setFinalizado] = useState(false);
+      const raspandoRef = useRef(false);
+      const progressoRef = useRef(0);
+      const reveladoRef = useRef(false);
+      const autoTimerRef = useRef(null);
+
+      const etapa = etapas[etapaAtual];
+      const ehUltima = etapaAtual === etapas.length - 1;
+
+      const avancarEtapa = useCallback(() => {
+        if (autoTimerRef.current) clearTimeout(autoTimerRef.current);
+        const proxima = etapaAtualRef.current + 1;
+        if (proxima >= etapas.length) {
+          setFraseOpacity(1);
+          setFraseBlur(0);
+          setImgOpacity(0.85);
+          setFinalizado(true);
+          return;
+        }
+        setFraseOpacity(0.15);
+        setFraseBlur(6);
+        setImgOpacity(0.05);
+        reveladoRef.current = false;
+        progressoRef.current = 0;
+        etapaAtualRef.current = proxima;
+        setEtapaAtual(proxima);
+      }, []);
+
+      function revelarTudo(canvas) {
+        if (reveladoRef.current) return;
+        reveladoRef.current = true;
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        setFraseOpacity(1);
+        setFraseBlur(0);
+        if (ehUltima) {
+          setFinalizado(true);
+          return;
+        }
+        autoTimerRef.current = setTimeout(() => {
+          avancarEtapa();
+        }, 5000);
+      }
+
+      function criarCamada(canvas) {
+        const ctx = canvas.getContext("2d");
+        progressoRef.current = 0;
+        reveladoRef.current = false;
+        ctx.globalCompositeOperation = "source-over";
+        const grad = ctx.createLinearGradient(0, 0, CARD_W, CARD_H);
+        if (ehUltima) {
+          grad.addColorStop(0, "#8b1a1a");
+          grad.addColorStop(0.5, "#c0392b");
+          grad.addColorStop(1, "#6d0f2a");
+        } else {
+          grad.addColorStop(0, "#c97a2b");
+          grad.addColorStop(1, "#8a4b1f");
+        }
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, CARD_W, CARD_H);
+        for (let i = 0; i < 800; i++) {
+          ctx.fillStyle = "rgba(255,255,255,0.03)";
+          ctx.fillRect(Math.random() * CARD_W, Math.random() * CARD_H, 2, 2);
+        }
+        ctx.font = `bold ${ehUltima ? 16 : 15}px Georgia, serif`;
+        ctx.fillStyle = ehUltima ? "rgba(255,220,220,0.5)" : "rgba(43,26,18,0.45)";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(
+          ehUltima ? "✦  Revele seu presente  ✦" : "✦  Raspe aqui  ✦",
+          CARD_W / 2,
+          CARD_H / 2
+        );
+        ctx.globalCompositeOperation = "destination-out";
+      }
+
+      function raspar(canvas, x, y) {
+        if (reveladoRef.current) return;
+        const ctx = canvas.getContext("2d");
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.beginPath();
+        ctx.arc(x, y, 24, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = "source-over";
+        for (let i = 0; i < 4; i++) {
+          ctx.fillStyle = "rgba(255,200,140,0.18)";
+          ctx.beginPath();
+          ctx.arc(
+            x + (Math.random() * 10 - 5),
+            y + (Math.random() * 10 - 5),
+            Math.random() * 2,
+            0,
+            Math.PI * 2
+          );
+          ctx.fill();
+        }
+        ctx.globalCompositeOperation = "destination-out";
+        progressoRef.current++;
+        if (progressoRef.current % 10 !== 0) return;
+        const pixels = ctx.getImageData(0, 0, CARD_W, CARD_H).data;
+        let transparentes = 0;
+        for (let i = 3; i < pixels.length; i += 4) {
+          if (pixels[i] < 10) transparentes++;
+        }
+        const p = transparentes / (CARD_W * CARD_H);
+        setFraseOpacity(0.15 + p * 0.85);
+        setFraseBlur(Math.max(0, 6 - p * 6));
+        setImgOpacity(0.05 + p * 0.2);
+        if (p > 0.55) {
+          revelarTudo(canvas);
+        }
+      }
+
+      useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas || finalizado) return;
+        criarCamada(canvas);
+      }, [etapaAtual, finalizado]);
+
+      useEffect(() => {
+        return () => {
+          if (autoTimerRef.current) clearTimeout(autoTimerRef.current);
+        };
+      }, []);
+
+      useEffect(() => {
+        const el = containerRef.current;
+        if (!el) return;
+        const prevent = (e) => e.preventDefault();
+        el.addEventListener("touchmove", prevent, { passive: false });
+        el.addEventListener("touchstart", prevent, { passive: false });
+        return () => {
+          el.removeEventListener("touchmove", prevent);
+          el.removeEventListener("touchstart", prevent);
+        };
+      }, []);
+
+      function getPos(e, canvas) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = CARD_W / rect.width;
+        const scaleY = CARD_H / rect.height;
+        if (e.touches) {
+          return {
+            x: (e.touches[0].clientX - rect.left) * scaleX,
+            y: (e.touches[0].clientY - rect.top) * scaleY,
+          };
+        }
+        return {
+          x: (e.clientX - rect.left) * scaleX,
+          y: (e.clientY - rect.top) * scaleY,
+        };
+      }
+
+      const cardBg = ehUltima
+        ? "linear-gradient(135deg,#c0392b,#8b1a1a)"
+        : "linear-gradient(135deg,#f4a261,#e76f51)";
+      const textoColor = ehUltima ? "#ffe8e8" : "#2b1a12";
+      const textoSize = ehUltima ? 26 : 20;
+
+      return (
+        <div
+          ref={containerRef}
+          style={{
+            margin: 0,
+            width: "100vw",
+            height: "100dvh",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            background: etapa.fundo,
+            fontFamily: "Georgia, serif",
+            overflow: "hidden",
+            transition: "background 1.2s ease",
+            touchAction: "none",
+            userSelect: "none",
+            WebkitUserSelect: "none",
+          }}
+        >
+          <div
+            style={{
+              position: "relative",
+              width: "min(320px, 90vw)",
+              height: "min(200px, 56vw)",
+            }}
+          >
+            <div
+              style={{
+                position: "absolute",
+                width: "100%",
+                height: "100%",
+                borderRadius: 14,
+                overflow: "hidden",
+                boxShadow: ehUltima
+                  ? "0 0 40px rgba(192,57,43,0.5), 0 10px 30px rgba(0,0,0,.5)"
+                  : "0 10px 30px rgba(0,0,0,.4)",
+                background: cardBg,
+                transition: "box-shadow 1s ease",
+              }}
+            >
+              {etapa.tipo === "imagem" && (
+                <img
+                  src={etapa.conteudo}
+                  style={{
+                    position: "absolute",
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    pointerEvents: "none",
+                    opacity: imgOpacity,
+                    filter: "sepia(65%) hue-rotate(-15deg) saturate(140%) brightness(85%) contrast(90%)",
+                    transition: "opacity 2.5s ease",
+                  }}
+                  alt="pôr do sol"
+                />
+              )}
+
+              <div
+                style={{
+                  position: "absolute",
+                  width: "100%",
+                  height: "100%",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  textAlign: "center",
+                  padding: 25,
+                  boxSizing: "border-box",
+                  fontSize: textoSize,
+                  fontWeight: ehUltima ? "bold" : "normal",
+                  lineHeight: 1.4,
+                  color: textoColor,
+                  opacity: fraseOpacity,
+                  filter: `blur(${fraseBlur}px)`,
+                  transition: "opacity .6s ease, filter .6s ease",
+                }}
+              >
+                {etapa.tipo === "texto" ? etapa.conteudo : etapa.frase}
+              </div>
+
+              {!finalizado && (
+                <canvas
+                  ref={canvasRef}
+                  width={CARD_W}
+                  height={CARD_H}
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: 14,
+                    cursor: "crosshair",
+                    touchAction: "none",
+                  }}
+                  onMouseDown={() => (raspandoRef.current = true)}
+                  onMouseUp={() => (raspandoRef.current = false)}
+                  onMouseLeave={() => (raspandoRef.current = false)}
+                  onMouseMove={(e) => {
+                    if (!raspandoRef.current || !canvasRef.current) return;
+                    const p = getPos(e, canvasRef.current);
+                    raspar(canvasRef.current, p.x, p.y);
+                  }}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    raspandoRef.current = true;
+                  }}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    raspandoRef.current = false;
+                  }}
+                  onTouchMove={(e) => {
+                    e.preventDefault();
+                    if (!canvasRef.current) return;
+                    const p = getPos(e, canvasRef.current);
+                    raspar(canvasRef.current, p.x, p.y);
+                  }}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<JornadaPage />);
+  </script>
+</body>
+</html>

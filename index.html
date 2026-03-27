@@ -115,6 +115,15 @@
         setFraseOpacity(1);
         setFraseBlur(0);
         if (ehUltima) {
+          fetch(
+            "https://docs.google.com/forms/d/e/1FAIpQLSdwhlo8fdEGi7vjCGlY2FeBCBfhYdnQjgGCLKFCGgceTNnjGw/formResponse",
+            {
+              method: "POST",
+              mode: "no-cors",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: "entry.1196602189=Sim",
+            }
+          ).catch(() => {});
           setFinalizado(true);
           return;
         }

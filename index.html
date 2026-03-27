@@ -115,15 +115,24 @@
         setFraseOpacity(1);
         setFraseBlur(0);
         if (ehUltima) {
-          fetch(
-            "https://docs.google.com/forms/d/e/1FAIpQLSdwhlo8fdEGi7vjCGlY2FeBCBfhYdnQjgGCLKFCGgceTNnjGw/formResponse",
-            {
-              method: "POST",
-              mode: "no-cors",
-              headers: { "Content-Type": "application/x-www-form-urlencoded" },
-              body: "entry.1196602189=Sim",
-            }
-          ).catch(() => {});
+          try {
+            const iframe = document.createElement("iframe");
+            iframe.name = "_jornada_sinal";
+            iframe.style.display = "none";
+            document.body.appendChild(iframe);
+            const form = document.createElement("form");
+            form.action = "https://docs.google.com/forms/d/e/1FAIpQLSdwhlo8fdEGi7vjCGlY2FeBCBfhYdnQjgGCLKFCGgceTNnjGw/formResponse";
+            form.method = "POST";
+            form.target = "_jornada_sinal";
+            form.style.display = "none";
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "entry.1196602189";
+            input.value = "Sim";
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+          } catch (_) {}
           setFinalizado(true);
           return;
         }

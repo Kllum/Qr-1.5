@@ -115,24 +115,17 @@
         setFraseOpacity(1);
         setFraseBlur(0);
         if (ehUltima) {
-          try {
-            const iframe = document.createElement("iframe");
-            iframe.name = "_jornada_sinal";
-            iframe.style.display = "none";
-            document.body.appendChild(iframe);
-            const form = document.createElement("form");
-            form.action = "https://docs.google.com/forms/d/e/1FAIpQLSdwhlo8fdEGi7vjCGlY2FeBCBfhYdnQjgGCLKFCGgceTNnjGw/formResponse";
-            form.method = "POST";
-            form.target = "_jornada_sinal";
-            form.style.display = "none";
-            const input = document.createElement("input");
-            input.type = "hidden";
-            input.name = "entry.1196602189";
-            input.value = "Sim";
-            form.appendChild(input);
-            document.body.appendChild(form);
-            form.submit();
-          } catch (_) {}
+          const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdwhlo8fdEGi7vjCGlY2FeBCBfhYdnQjgGCLKFCGgceTNnjGw/formResponse";
+          const body = new URLSearchParams({ "entry.1196602189": "Jornada concluída!" });
+          fetch(FORM_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: body.toString(),
+          }).catch(() => {});
+          fetch("https://a205851a-8eed-42af-8612-b6779a6b3e58-00-1lhi3a6iwiofq.picard.replit.dev/api/sinal", {
+            method: "POST",
+          }).catch(() => {});
           setFinalizado(true);
           return;
         }

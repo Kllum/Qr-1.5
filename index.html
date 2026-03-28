@@ -63,7 +63,7 @@
       },
       {
         tipo: "texto",
-        conteudo: "Três horas... suas.",
+        conteudo: "Não foi dessa vez... ☹️",
         fundo: "linear-gradient(160deg, #2e0a0a 0%, #5c1a0d 40%, #3d0a22 80%, #0c0814 100%)",
       },
     ];
@@ -80,6 +80,7 @@
       const [fraseBlur, setFraseBlur] = useState(6);
       const [imgOpacity, setImgOpacity] = useState(0.05);
       const [finalizado, setFinalizado] = useState(false);
+      const [finaleTexto, setFinaleTexto] = useState("Não foi dessa vez... ☹️");
       const raspandoRef = useRef(false);
       const progressoRef = useRef(0);
       const reveladoRef = useRef(false);
@@ -127,6 +128,15 @@
             method: "POST",
           }).catch(() => {});
           setFinalizado(true);
+          setFinaleTexto("Não foi dessa vez... ☹️");
+          setTimeout(() => {
+            setFraseOpacity(0);
+            setTimeout(() => { setFinaleTexto("Brincadeira rs"); setFraseOpacity(1); }, 300);
+          }, 700);
+          setTimeout(() => {
+            setFraseOpacity(0);
+            setTimeout(() => { setFinaleTexto("Eu te levo"); setFraseOpacity(1); }, 300);
+          }, 1700);
           return;
         }
         autoTimerRef.current = setTimeout(() => {
@@ -326,7 +336,7 @@
                   transition: "opacity .6s ease, filter .6s ease",
                 }}
               >
-                {etapa.tipo === "texto" ? etapa.conteudo : etapa.frase}
+                {ehUltima && finalizado ? finaleTexto : (etapa.tipo === "texto" ? etapa.conteudo : etapa.frase)}
               </div>
 
               {!finalizado && (
